@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Next.js build output and generated files
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# Environment and secrets (the template .env.example stays tracked)
+.env
+.env.*
+!.env.example
+
+# Local SQLite databases (schema lives in packages/db/prisma/migrations)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Tests and tooling output
+coverage/
+.vitest/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# Local Claude Code settings
+.claude/settings.local.json
