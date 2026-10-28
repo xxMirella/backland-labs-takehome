@@ -16,18 +16,52 @@ Dependency direction: `web → backend → db`.
 
 ## Run locally
 
-Requires Node >= 20.12 (`.nvmrc` pins 22).
+**You need:** Node.js 20.12 or newer (`.nvmrc` pins 22: `nvm use` if you use nvm), npm, and an internet connection the first time
+(Prisma downloads its database engine). No Docker, no database server: data lives in a local SQLite file.
 
 ```bash
+git clone <repo-url>
+cd <project-folder>
 npm install
-npm run setup   # creates .env, generates Prisma client, applies migrations
-npm run dev     # http://localhost:3000
+npm run dev        # http://localhost:3000
 ```
 
-Other scripts: `npm run typecheck`, `npm run db:studio`, `npm run db:reset`,
-`npm test`, `npm run db:migrate -w @app/db -- --name <name>` (after changing the schema).
+That's it. The first `npm run dev` also creates your `.env` from `.env.example`, generates the Prisma client and creates the
+SQLite database (`packages/db/prisma/dev.db`), and every later run applies any new migrations after a `git pull`. You can run these
+steps on their own with `npm run setup`.
 
-All config lives in one root `.env` (see `.env.example`). To enable AI analysis, put your OpenRouter key in `OPENROUTER_API_KEY` (and optionally a model slug in `OPENROUTER_MODEL`); without it intakes are still saved, just not analysed.
+Open http://localhost:3000, submit a project to create your account, and you're in.
+
+### Configuration (`.env`, optional)
+
+All config lives in one root `.env` (see `.env.example`). The defaults work as-is.
+
+| Variable | What it does |
+| --- | --- |
+| `DATABASE_URL` | SQLite file, relative to `packages/db/prisma`. Default `file:./dev.db`. |
+| `OPENROUTER_API_KEY` | Turns on the AI analysis (tags, risks, summary) of new projects. Without it projects are still saved, just not analysed. |
+| `OPENROUTER_MODEL` | Optional model slug from openrouter.ai/models (default `openrouter/free`). |
+| `ADMIN_EMAILS` | Comma-separated emails of team members who see **every** project and its AI analysis. Register these accounts first. |
+
+Restart `npm run dev` after editing `.env`.
+
+### Useful commands
+
+| Command | |
+| --- | --- |
+| `npm test` | Unit and API tests (no network, no real database needed). |
+| `npm run typecheck` | TypeScript check of every package. |
+| `npm run build` then `npm start` | Production build. Run `npm run setup` once first. |
+| `npm run db:studio` | Browse the database in the browser. |
+| `npm run db:migrate -w @app/db -- --name <name>` | Create a migration after changing `schema.prisma`. |
+
+### Troubleshooting
+
+- **Port 3000 is busy:** `PORT=3001 npm run dev` (PowerShell: `$env:PORT=3001; npm run dev`).
+- **`npm warn allow-scripts …` during install:** harmless, npm is just reporting package install scripts it skipped.
+- **"The engine node is incompatible":** upgrade Node to 20.12 or newer.
+- **`Environment variable not found: DATABASE_URL`:** `.env` is missing; run `npm run setup`.
+- **Start over with an empty database:** stop the server, delete `packages/db/prisma/dev.db`, run `npm run dev`.
 
 ## Accounts
 
