@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Intake {
+  id          String   @id @default(cuid())
+  name        String   @default("Not provided") // who sent it (default only backfills old rows)
+  email       String   @default("Not provided")
+  company     String   @default("Not provided")
+  title       String
+  description String
+  budget      Int      // whole US dollars
+  timeline    DateTime // desired delivery date (stored at 00:00 UTC)
+  industry    String
+  tags        Json     @default("[]") // string[], set by AI analysis
+  risks       Json     @default("[]") // {type, severity, message}[], set by AI analysis
+  summary     String?  // short AI summary of the intake
+  keyPoints   Json     @default("[]") // string[]: next steps / questions for the client, set by AI
+  priority       String   @default("normal") // "urgent" | "normal"
+  priorityReason String?  // why it is urgent (AI or deadline rule)
+  userId      String?  // owner; null for rows created before accounts existed (visible to admins only)
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("intakes")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique // stored lower-cased
+  company      String
+  passwordHash String   // scrypt$N$salt$key
+  createdAt    DateTime @default(now()) @map("created_at")
+  intakes      Intake[]
+  sessions     Session[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id // SHA-256 of the cookie token; the raw token is never stored
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("sessions")
+}
